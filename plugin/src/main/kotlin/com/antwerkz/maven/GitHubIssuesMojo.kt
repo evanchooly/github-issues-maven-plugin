@@ -11,39 +11,41 @@ import org.kohsuke.github.GHMilestone
 import org.kohsuke.github.GHRepository
 import org.kohsuke.github.GitHub
 import java.io.File
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
 
-@Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
+@Mojo(name = "generate", defaultPhase = LifecyclePhase.DEPLOY)
 class GitHubIssuesMojo : AbstractMojo() {
     companion object {
         fun build(name: String, version: String, javadocUrl: String, expected: GHIssueState = CLOSED,
                   outputFile: String? = null): GitHubIssuesMojo {
             return GitHubIssuesMojo().also { mojo ->
-                mojo.repositoryName = name
-                mojo.releaseVersion = version
-                mojo.javadocUrl = javadocUrl
+                mojo.repository = name
+                mojo.version = version
+                mojo.javadoc = javadocUrl
                 mojo.expectedState = expected
                 mojo.outputFile = outputFile
             }
         }
     }
 
-    @Parameter(name = "repository", property = "\${github.repository}", readonly = false, required = true)
-    lateinit var repositoryName: String
+    @Parameter(name = "repository", property = "github.repository", readonly = false, required = true)
+    lateinit var repository: String
 
-    val repository: GHRepository by lazy {
-        GitHub.connect().getRepository(repositoryName)
+    val ghRepository: GHRepository by lazy {
+        val path = if(repository.contains(":")) URL(repository).path.drop(1) else repository
+        GitHub.connect().getRepository(path)
     }
 
-    @Parameter(name = "release.version", property = "\${github.release.version}",
+    @Parameter(name = "version", property = "github.release.version",
                defaultValue = "\${project.version}", readonly = false, required = true)
-    lateinit var releaseVersion: String
+    lateinit var version: String
 
-    @Parameter(property = "\${github.javadoc.url}", readonly = false, required = true)
-    lateinit var javadocUrl: String
+    @Parameter(property = "javadoc", readonly = false, required = true)
+    lateinit var javadoc: String
 
-    @Parameter(property = "\${github.release.notes.file}", readonly = false)
+    @Parameter(readonly = false)
     var outputFile: String? = null
 
     //generally we're going to expect the release milestone to be open. This is set-able for testing.
@@ -59,8 +61,8 @@ class GitHubIssuesMojo : AbstractMojo() {
         if (outputFile != null) {
             File(outputFile).writeText(notes)
         } else {
-            repository.createRelease("r${releaseVersion}")
-                    .name(releaseVersion)
+            ghRepository.createRelease("r${version}")
+                    .name(version)
                     .body(notes)
                     .draft(true)
                     .create()
@@ -71,7 +73,7 @@ class GitHubIssuesMojo : AbstractMojo() {
         val date = milestone.closedAt ?: Date()
         val closed = SimpleDateFormat("MMM dd, yyyy").format(date)
         var notes = """
-## Version ${releaseVersion} ($closed)
+## Version ${version} ($closed)
 
 ### Notes
 
@@ -79,18 +81,19 @@ class GitHubIssuesMojo : AbstractMojo() {
 Binaries can be found on maven central.
 
 ### Docs
-Full documentation and javadoc can be found at ${repository.htmlUrl} and $javadocUrl.
+Full documentation and javadoc can be found at ${ghRepository.htmlUrl} and $javadoc.
 
 ### ${milestone.closedIssues} Issues Resolved
 """
-        val labels = repository.listLabels()
+        val labels = ghRepository.listLabels()
                 .map { it.name to it.color }
                 .toMap()
 
         issues.forEach { (key, issues) ->
             notes += "#### ![](https://placehold.it/15/${labels[key]}/000000?text=+) ${key.toUpperCase()}\n"
             issues.forEach { issue ->
-                notes += "* [Issue ${issue.number}](${issue.htmlUrl}): ${issue.title}\n"
+                val label = if(issue.isPullRequest) "PR" else "Issue"
+                notes += "* [$label #${issue.number}](${issue.htmlUrl}): ${issue.title}\n"
             }
             notes += "\n"
         }
@@ -99,17 +102,20 @@ Full documentation and javadoc can be found at ${repository.htmlUrl} and $javado
     }
 
     private fun groupIssues(): Map<String, List<GHIssue>> {
-        val filter = repository.listIssues(CLOSED).filter { it.milestone?.number == milestone.number }
+        val filter = ghRepository.listIssues(CLOSED).filter { it.milestone?.number == milestone.number }
 
         return filter.flatMap { it ->
             if (it.labels.isEmpty()) listOf("uncategorized" to it)
             else it.labels.map { label -> label.name to it }
-        }.groupBy({ it -> it.first }, { it.second }).toSortedMap()
+        }
+                .groupBy({ it -> it.first }, { it.second })
+                .mapValues { it.value.sortedBy { issue ->  issue.number} }
+                .toSortedMap()
     }
 
     private fun findMilestone(): GHMilestone {
-        return repository.listMilestones(expectedState).find { milestone ->
-            milestone.title == releaseVersion
-        } ?: throw IllegalArgumentException("Github milestone ${releaseVersion} either does not exist, or is already closed.")
+        return ghRepository.listMilestones(expectedState).find { milestone ->
+            milestone.title == version
+        } ?: throw IllegalArgumentException("Github milestone ${version} either does not exist, or is already closed.")
     }
 }
