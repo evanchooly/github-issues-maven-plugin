@@ -79,7 +79,7 @@ class GitHubIssuesMojo : AbstractMojo() {
 Binaries can be found on maven central.
 
 ### Docs
-Full documentation and javadoc can be found at ${repository.url} and $javadocUrl.
+Full documentation and javadoc can be found at ${repository.htmlUrl} and $javadocUrl.
 
 ### ${milestone.closedIssues} Issues Resolved
 """

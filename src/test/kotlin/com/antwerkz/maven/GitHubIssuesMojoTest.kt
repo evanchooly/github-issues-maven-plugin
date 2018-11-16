@@ -10,7 +10,7 @@ class GitHubIssuesMojoTest {
     @Test
     fun testGenerate() {
         val mojo = GitHubIssuesMojo
-                .build("MorphiaOrg/morphia", "1.3.0", "http://morphiaorg.github.io/morphia/1.3/javadoc/", ALL,
+                .build("MorphiaOrg/morphia", "1.5.0", "http://morphiaorg.github.io/morphia/1.5/javadoc/", ALL,
                        outputFile = "target/TestNotes.md")
 
         Assert.assertNotNull(mojo.issues["uncategorized"])
