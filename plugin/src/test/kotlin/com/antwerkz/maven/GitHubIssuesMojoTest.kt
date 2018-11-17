@@ -24,4 +24,15 @@ class GitHubIssuesMojoTest {
         Assert.assertTrue(file.exists())
         Assert.assertEquals(notes, file.readText())
     }
+
+    @Test
+    fun badMilestone() {
+        try {
+            GitHubIssuesMojo
+                    .build("MorphiaOrg/morphia", "12.0", "", ALL)
+                    .execute()
+        } catch (e: IllegalArgumentException) {
+            Assert.assertEquals("Github milestone 12.0 either does not exist or is already closed for MorphiaOrg/morphia.", e.message)
+        }
+    }
 }

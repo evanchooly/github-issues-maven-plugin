@@ -4,6 +4,7 @@ import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugins.annotations.LifecyclePhase
 import org.apache.maven.plugins.annotations.Mojo
 import org.apache.maven.plugins.annotations.Parameter
+import org.apache.maven.project.MavenProject
 import org.kohsuke.github.GHIssue
 import org.kohsuke.github.GHIssueState
 import org.kohsuke.github.GHIssueState.CLOSED
@@ -32,6 +33,9 @@ class GitHubIssuesMojo : AbstractMojo() {
         }
     }
 
+    @Parameter
+    lateinit var project: MavenProject
+
     @Parameter(name = "repository", property = "github.repository", required = true)
     lateinit var repository: String
 
@@ -39,8 +43,8 @@ class GitHubIssuesMojo : AbstractMojo() {
         GitHub.connect().getRepository(repository)
     }
 
-    @Parameter(name = "version", property = "github.release.version", defaultValue = "\${project.version}", required = true)
-    lateinit var version: String
+    @Parameter(name = "version", property = "github.release.version", defaultValue = "\${project.version}")
+    var version: String? = null
 
     @Parameter(property = "javadocUrl", required = true)
     lateinit var javadocUrl: String
@@ -51,7 +55,7 @@ class GitHubIssuesMojo : AbstractMojo() {
     @Parameter(defaultValue = "false")
     var generateRelease = false
 
-    //generally we're going to expect the release milestone to be open. This is set-able for testing.
+    //generally we're going to expect the release milestone to be open. This is settable for testing.
     private var expectedState = GHIssueState.OPEN
 
     val milestone: GHMilestone by lazy { findMilestone() }
@@ -61,13 +65,14 @@ class GitHubIssuesMojo : AbstractMojo() {
     val notes: String by lazy { draftContent() }
 
     override fun execute() {
+        version = (this.version ?: project.version).replace("-SNAPSHOT", "")
         val file = File(outputDir ?: ".", "Changes-$version.md").absoluteFile
         log.info("Generating changes in ${file}")
         file.parentFile.mkdirs()
         file.writeText(notes)
 
         if (generateRelease) {
-            ghRepository.createRelease("r${version}").name(version).body(notes).draft(true).create()
+            ghRepository.createRelease("r$version").name(version).body(notes).draft(true).create()
         }
     }
 
@@ -113,6 +118,6 @@ Full documentation and javadoc can be found at ${ghRepository.htmlUrl} and $java
     private fun findMilestone(): GHMilestone {
         return ghRepository.listMilestones(expectedState).find { milestone ->
             milestone.title == version
-        } ?: throw IllegalArgumentException("Github milestone ${version} either does not exist, or is already closed.")
+        } ?: throw IllegalArgumentException("Github milestone $version either does not exist or is already closed for ${ghRepository.fullName}.")
     }
 }

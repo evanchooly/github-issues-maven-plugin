@@ -6,13 +6,13 @@
 
     <parent>
         <groupId>com.antwerkz.github</groupId>
-        <artifactId>issues</artifactId>
+        <artifactId>issues-maven-plugin-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>test</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <build>
@@ -42,7 +42,7 @@
                         <configuration>
                             <repository>MorphiaOrg/morphia</repository>
                             <javadocUrl>http://morphiaorg.github.io/morphia/1.5/javadoc/</javadocUrl>
-                            <version>1.5.0</version>
+                            <version>1.5.0-SNAPSHOT</version>
                             <outputDir>${project.build.directory}</outputDir>
                         </configuration>
                     </execution>
