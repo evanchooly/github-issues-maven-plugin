@@ -17,6 +17,7 @@
     <packaging>jar</packaging>
 
     <build>
+        <defaultGoal>test</defaultGoal>
         <sourceDirectory>src/main/kotlin</sourceDirectory>
         <testSourceDirectory>src/test/kotlin</testSourceDirectory>
 
@@ -40,10 +41,10 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <repository>https://github.com/MorphiaOrg/morphia</repository>
+                            <repository>MorphiaOrg/morphia</repository>
                             <javadoc>http://morphiaorg.github.io/morphia/1.5/javadoc/</javadoc>
                             <version>1.5.0</version>
-                            <outputFile>target/Issues-1.5.0.md</outputFile>
+                            <outputFile>${project.build.directory}/Changes-1.5.0.md</outputFile>
                         </configuration>
                     </execution>
                 </executions>

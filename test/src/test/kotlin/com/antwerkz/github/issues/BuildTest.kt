@@ -7,6 +7,6 @@ import java.io.File
 class BuildTest {
     @Test
     fun checkForFile() {
-        Assert.assertTrue(File("target/Issues-1.5.0.md").exists())
+        Assert.assertTrue(File("target/Changes-1.5.0.md").exists())
     }
 }
