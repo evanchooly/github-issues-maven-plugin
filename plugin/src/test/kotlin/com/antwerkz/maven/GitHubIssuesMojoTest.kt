@@ -11,7 +11,7 @@ class GitHubIssuesMojoTest {
     fun testGenerate() {
         val mojo = GitHubIssuesMojo
                 .build("MorphiaOrg/morphia", "1.5.0", "http://morphiaorg.github.io/morphia/1.5/javadoc/", ALL,
-                       outputFile = "target/TestNotes.md")
+                       outputDir = "target")
 
         Assert.assertNotNull(mojo.issues["uncategorized"])
 
@@ -20,7 +20,7 @@ class GitHubIssuesMojoTest {
 
         mojo.execute()
 
-        val file = File(mojo.outputFile)
+        val file = File(mojo.outputDir, "Changes-1.5.0.md")
         Assert.assertTrue(file.exists())
         Assert.assertEquals(notes, file.readText())
     }

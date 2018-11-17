@@ -18,15 +18,15 @@ import java.util.Date
 class GitHubIssuesMojo : AbstractMojo() {
     companion object {
         fun build(
-            name: String, version: String, javadocUrl: String, expected: GHIssueState = CLOSED, outputFile: String? = null
+            name: String, version: String, javadocUrl: String, expected: GHIssueState = CLOSED, outputDir: String? = null
         ): GitHubIssuesMojo {
             return GitHubIssuesMojo().also { mojo ->
                 mojo.repository = name
                 mojo.version = version
-                mojo.javadoc = javadocUrl
+                mojo.javadocUrl = javadocUrl
                 mojo.expectedState = expected
-                outputFile?.let {
-                    mojo.outputFile = outputFile
+                outputDir?.let {
+                    mojo.outputDir = outputDir
                 }
             }
         }
@@ -42,11 +42,11 @@ class GitHubIssuesMojo : AbstractMojo() {
     @Parameter(name = "version", property = "github.release.version", defaultValue = "\${project.version}", required = true)
     lateinit var version: String
 
-    @Parameter(property = "javadoc", required = true)
-    lateinit var javadoc: String
+    @Parameter(property = "javadocUrl", required = true)
+    lateinit var javadocUrl: String
 
     @Parameter
-    var outputFile: String? = null
+    var outputDir: String? = null
 
     @Parameter(defaultValue = "false")
     var generateRelease = false
@@ -61,7 +61,7 @@ class GitHubIssuesMojo : AbstractMojo() {
     val notes: String by lazy { draftContent() }
 
     override fun execute() {
-        val file = File(outputFile ?: "Changes-$version.md").absoluteFile
+        val file = File(outputDir ?: ".", "Changes-$version.md").absoluteFile
         log.info("Generating changes in ${file}")
         file.parentFile.mkdirs()
         file.writeText(notes)
@@ -83,7 +83,7 @@ class GitHubIssuesMojo : AbstractMojo() {
 Binaries can be found on maven central.
 
 ### Docs
-Full documentation and javadoc can be found at ${ghRepository.htmlUrl} and $javadoc.
+Full documentation and javadoc can be found at ${ghRepository.htmlUrl} and $javadocUrl.
 
 ### ${milestone.closedIssues} Issues Resolved
 """

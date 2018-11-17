@@ -8,8 +8,8 @@
         <version>9</version>
     </parent>
 
-    <groupId>com.antwerkz.maven</groupId>
-    <artifactId>github-issues</artifactId>
+    <groupId>com.antwerkz.github</groupId>
+    <artifactId>issues</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
 

@@ -5,13 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.antwerkz.maven</groupId>
-        <artifactId>github-issues</artifactId>
+        <groupId>com.antwerkz.github</groupId>
+        <artifactId>issues</artifactId>
         <version>1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.antwerkz.maven</groupId>
     <artifactId>test</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
@@ -32,7 +31,7 @@
             </plugin>
             <plugin>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>github-issues-maven-plugin</artifactId>
+                <artifactId>issues-maven-plugin</artifactId>
                 <version>${project.version}</version>
                 <executions>
                     <execution>
@@ -42,9 +41,9 @@
                         </goals>
                         <configuration>
                             <repository>MorphiaOrg/morphia</repository>
-                            <javadoc>http://morphiaorg.github.io/morphia/1.5/javadoc/</javadoc>
+                            <javadocUrl>http://morphiaorg.github.io/morphia/1.5/javadoc/</javadocUrl>
                             <version>1.5.0</version>
-                            <outputFile>${project.build.directory}/Changes-1.5.0.md</outputFile>
+                            <outputDir>${project.build.directory}</outputDir>
                         </configuration>
                     </execution>
                 </executions>
