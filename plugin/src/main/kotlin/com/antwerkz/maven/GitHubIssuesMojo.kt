@@ -66,7 +66,7 @@ class GitHubIssuesMojo : AbstractMojo() {
 
     override fun execute() {
         version = (this.version ?: project.version).replace("-SNAPSHOT", "")
-        val file = File(outputDir ?: ".", "Changes-$version.md").absoluteFile
+        val file = outputDir?.let { File(outputDir, "Changes-$version.md") } ?: File("Changes-$version.md").absoluteFile
         log.info("Generating changes in ${file}")
         file.parentFile.mkdirs()
         file.writeText(notes)
@@ -118,6 +118,7 @@ Full documentation and javadoc can be found at ${ghRepository.htmlUrl} and $java
     private fun findMilestone(): GHMilestone {
         return ghRepository.listMilestones(expectedState).find { milestone ->
             milestone.title == version
-        } ?: throw IllegalArgumentException("Github milestone $version either does not exist or is already closed for ${ghRepository.fullName}.")
+        }
+                ?: throw IllegalArgumentException("Github milestone $version either does not exist or is already closed for ${ghRepository.fullName}.")
     }
 }
