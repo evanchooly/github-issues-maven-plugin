@@ -109,7 +109,13 @@ Full documentation and javadoc can be found at ${ghRepository.htmlUrl} and $java
     private fun groupIssues(): Map<String, List<GHIssue>> {
         val filter = ghRepository.listIssues(CLOSED).filter { it.milestone?.number == milestone.number }
 
-        return filter.flatMap { it ->
+        return filter
+            .filter { issue ->
+                !issue.labels
+                    .map { it.name }
+                    .contains("invalid")
+            }
+            .flatMap { it ->
             if (it.labels.isEmpty()) listOf("uncategorized" to it)
             else it.labels.map { label -> label.name to it }
         }.groupBy({ it -> it.first }, { it.second }).mapValues { it.value.sortedBy { issue -> issue.number } }.toSortedMap()

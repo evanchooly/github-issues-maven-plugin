@@ -26,6 +26,18 @@ class GitHubIssuesMojoTest {
     }
 
     @Test
+    fun ignoreInvalidIssues() {
+        val mojo = GitHubIssuesMojo
+                .build("MorphiaOrg/morphia", "1.5.0", "http://morphiaorg.github.io/morphia/1.5/javadoc/", ALL,
+                       outputDir = "target")
+        mojo.execute()
+
+        val file = File(mojo.outputDir, "Changes-1.5.0.md")
+        Assert.assertTrue(file.exists())
+        Assert.assertFalse(file.readText().contains("#1306"))
+    }
+
+    @Test
     fun badMilestone() {
         try {
             GitHubIssuesMojo
