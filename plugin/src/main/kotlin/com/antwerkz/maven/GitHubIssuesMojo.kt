@@ -111,9 +111,10 @@ Full documentation and javadoc can be found at ${ghRepository.htmlUrl} and $java
 
         return filter
             .filter { issue ->
-                !issue.labels
+                issue.labels
                     .map { it.name }
-                    .contains("invalid")
+                    .union(listOf("wontfix", "invalid"))
+                    .isEmpty()
             }
             .flatMap { it ->
             if (it.labels.isEmpty()) listOf("uncategorized" to it)
