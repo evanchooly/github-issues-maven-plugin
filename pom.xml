@@ -10,7 +10,7 @@
     <groupId>com.antwerkz.github</groupId>
     <artifactId>issues-maven-plugin-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
 
     <name>Github Issues Maven Plugin</name>
     <url>https://github.com/evanchooly/github-issues-maven-plugin</url>
