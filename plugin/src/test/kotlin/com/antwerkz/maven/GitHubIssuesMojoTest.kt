@@ -13,8 +13,6 @@ class GitHubIssuesMojoTest {
                 .build("MorphiaOrg/morphia", "1.5.0", "http://morphiaorg.github.io/morphia/1.5/javadoc/", ALL,
                        outputDir = "target")
 
-        Assert.assertNotNull(mojo.issues["uncategorized"])
-
         val notes = mojo.notes
         Assert.assertFalse(notes.isBlank())
 
