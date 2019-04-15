@@ -14,7 +14,7 @@ class GitHubIssuesMojoTest {
                        outputDir = "target")
 
         val notes = mojo.notes
-        Assert.assertFalse(notes.isBlank())
+        Assert.assertFalse(notes?.isBlank() ?: true)
 
         mojo.execute()
 
