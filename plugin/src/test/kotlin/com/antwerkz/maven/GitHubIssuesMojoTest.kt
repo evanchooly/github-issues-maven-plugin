@@ -11,7 +11,7 @@ class GitHubIssuesMojoTest {
     fun testGenerate() {
         val mojo = GitHubIssuesMojo
                 .build("MorphiaOrg/morphia", "1.5.0", "http://morphiaorg.github.io/morphia/1.5/javadoc/", ALL,
-                       outputDir = "target")
+                        outputDir = "target")
 
         val notes = mojo.notes
         Assert.assertFalse(notes?.isBlank() ?: true)
@@ -27,7 +27,7 @@ class GitHubIssuesMojoTest {
     fun ignoreInvalidIssues() {
         val mojo = GitHubIssuesMojo
                 .build("MorphiaOrg/morphia", "1.5.0", "http://morphiaorg.github.io/morphia/1.5/javadoc/", ALL,
-                       outputDir = "target")
+                        outputDir = "target")
         mojo.execute()
 
         val file = File(mojo.outputDir, "Changes-1.5.0.md")
@@ -37,12 +37,8 @@ class GitHubIssuesMojoTest {
 
     @Test
     fun badMilestone() {
-        try {
-            GitHubIssuesMojo
-                    .build("MorphiaOrg/morphia", "12.0", "", ALL)
-                    .execute()
-        } catch (e: IllegalArgumentException) {
-            Assert.assertEquals("Github milestone 12.0 either does not exist or is already closed for MorphiaOrg/morphia.", e.message)
-        }
+        GitHubIssuesMojo
+                .build("MorphiaOrg/morphia", "12.0", "", ALL)
+                .execute()
     }
 }
