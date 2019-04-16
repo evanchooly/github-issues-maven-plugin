@@ -6,7 +6,7 @@ import org.apache.maven.plugins.annotations.Mojo
 import org.apache.maven.plugins.annotations.Parameter
 import org.apache.maven.project.MavenProject
 import org.kohsuke.github.GHIssue
-import org.kohsuke.github.GHIssueState
+import org.kohsuke.github.GHIssueState.ALL
 import org.kohsuke.github.GHIssueState.CLOSED
 import org.kohsuke.github.GHMilestone
 import org.kohsuke.github.GHRepository
@@ -18,14 +18,11 @@ import java.util.Date
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.DEPLOY)
 class GitHubIssuesMojo : AbstractMojo() {
     companion object {
-        fun build(
-                name: String, version: String, javadocUrl: String, expected: GHIssueState = CLOSED, outputDir: String? = null
-        ): GitHubIssuesMojo {
+        fun build(name: String, version: String, javadocUrl: String, outputDir: String? = null): GitHubIssuesMojo {
             return GitHubIssuesMojo().also { mojo ->
                 mojo.repository = name
                 mojo.version = version
                 mojo.javadocUrl = javadocUrl
-                mojo.expectedState = expected
                 outputDir?.let {
                     mojo.outputDir = outputDir
                 }
@@ -54,9 +51,6 @@ class GitHubIssuesMojo : AbstractMojo() {
 
     @Parameter(defaultValue = "false")
     var generateRelease = false
-
-    //generally we're going to expect the release milestone to be open. This is settable for testing.
-    private var expectedState = GHIssueState.OPEN
 
     val milestone: GHMilestone? by lazy { findMilestone() }
 
@@ -126,7 +120,7 @@ Full documentation and javadoc can be found at ${ghRepository.htmlUrl} and $java
     }
 
     private fun findMilestone(): GHMilestone? {
-        return ghRepository.listMilestones(expectedState).find { milestone ->
+        return ghRepository.listMilestones(ALL).find { milestone ->
             milestone.title == version
         }
     }

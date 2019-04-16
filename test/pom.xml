@@ -39,8 +39,8 @@
                         </goals>
                         <configuration>
                             <repository>MorphiaOrg/morphia</repository>
-                            <javadocUrl>http://morphiaorg.github.io/morphia/1.5/javadoc/</javadocUrl>
-                            <version>1.5.0-SNAPSHOT</version>
+                            <javadocUrl>http://morphia.dev/1.5/javadoc/</javadocUrl>
+                            <version>1.5.0</version>
                             <outputDir>${project.build.directory}</outputDir>
                         </configuration>
                     </execution>
