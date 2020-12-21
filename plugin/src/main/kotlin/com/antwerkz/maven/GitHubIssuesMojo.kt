@@ -11,24 +11,13 @@ import org.kohsuke.github.GHIssueState.CLOSED
 import org.kohsuke.github.GHMilestone
 import org.kohsuke.github.GHRepository
 import org.kohsuke.github.GitHub
+import org.kohsuke.github.GitHubBuilder
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.DEPLOY)
 class GitHubIssuesMojo : AbstractMojo() {
-    companion object {
-        fun build(name: String, version: String, javadocUrl: String, outputDir: String? = null): GitHubIssuesMojo {
-            return GitHubIssuesMojo().also { mojo ->
-                mojo.repository = name
-                mojo.version = version
-                mojo.javadocUrl = javadocUrl
-                outputDir?.let {
-                    mojo.outputDir = outputDir
-                }
-            }
-        }
-    }
 
     @Parameter
     lateinit var project: MavenProject
@@ -36,9 +25,6 @@ class GitHubIssuesMojo : AbstractMojo() {
     @Parameter(name = "repository", property = "github.repository", required = true)
     lateinit var repository: String
 
-    val ghRepository: GHRepository by lazy {
-        GitHub.connect().getRepository(repository)
-    }
 
     @Parameter(name = "version", property = "github.release.version", defaultValue = "\${project.version}")
     var version: String? = null
@@ -52,76 +38,9 @@ class GitHubIssuesMojo : AbstractMojo() {
     @Parameter(defaultValue = "false")
     var generateRelease = false
 
-    val milestone: GHMilestone? by lazy { findMilestone() }
-
-    val issues: Map<String, List<GHIssue>> by lazy { groupIssues() }
-
-    val notes: String? by lazy { draftContent() }
-
     override fun execute() {
-        version = (this.version ?: project.version).replace("-SNAPSHOT", "")
-        if (notes != null) {
-
-            val file = outputDir?.let { File(outputDir, "Changes-$version.md") } ?: File("Changes-$version.md").absoluteFile
-            log.info("Generating changes in ${file}")
-            file.parentFile.mkdirs()
-            file.writeText(notes ?: "")
-
-            if (generateRelease) {
-                ghRepository.createRelease("r$version").name(version).body(notes).draft(true).create()
-            }
-        } else {
-            log.info("Github milestone $version either does not exist or is already closed for ${ghRepository.fullName}.")
-        }
 
     }
 
-    private fun draftContent(): String? {
-        return milestone?.let {
-            val date = it.closedAt ?: Date()
-            val closed = SimpleDateFormat("MMM dd, yyyy").format(date)
-            var notes = """
-## Version ${version} ($closed)
 
-### Notes
-
-### Downloads
-Binaries can be found on maven central.
-
-### Docs
-Full documentation and javadoc can be found at ${ghRepository.htmlUrl} and $javadocUrl.
-
-### ${it.closedIssues} Issues Resolved
-"""
-            val labels = ghRepository.listLabels().map { it.name to it.color }.toMap()
-
-            issues.forEach { (key, issues) ->
-                notes += "#### ![](https://placehold.it/15/${labels[key]}/000000?text=+) ${key.toUpperCase()}\n"
-                issues.forEach { issue ->
-                    val label = if (issue.isPullRequest) "PR" else "Issue"
-                    notes += "* [$label #${issue.number}](${issue.htmlUrl}): ${issue.title}\n"
-                }
-                notes += "\n"
-            }
-
-            notes
-        }
-    }
-
-    private fun groupIssues(): Map<String, List<GHIssue>> {
-        val filter = ghRepository.listIssues(CLOSED).filter { it.milestone?.number == milestone?.number }
-
-        return filter.filter { issue ->
-            issue.labels.map { it.name }.intersect(listOf("wontfix", "invalid")).isEmpty()
-        }.flatMap { it ->
-            if (it.labels.isEmpty()) listOf("uncategorized" to it)
-            else it.labels.map { label -> label.name to it }
-        }.groupBy({ it -> it.first }, { it.second }).mapValues { it.value.sortedBy { issue -> issue.number } }.toSortedMap()
-    }
-
-    private fun findMilestone(): GHMilestone? {
-        return ghRepository.listMilestones(ALL).find { milestone ->
-            milestone.title == version
-        }
-    }
 }
