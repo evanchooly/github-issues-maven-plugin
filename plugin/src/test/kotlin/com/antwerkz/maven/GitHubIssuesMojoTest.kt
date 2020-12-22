@@ -22,6 +22,8 @@ class GitHubIssuesMojoTest {
 
     @Test
     fun testGenerate() {
+        println(File(CONFIG).absolutePath)
+        println(File(CONFIG).exists())
         createRepo()
 
         generator().generate()
