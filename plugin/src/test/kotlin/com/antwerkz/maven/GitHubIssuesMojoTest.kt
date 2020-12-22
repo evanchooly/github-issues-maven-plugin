@@ -79,7 +79,8 @@ class GitHubIssuesMojoTest {
             gitHub.getRepository("testingchooly/${TEST_REPOSITORY}")
                 .delete()
             sleep(3000)
-        } catch (_: GHFileNotFoundException) {
+        } catch (e: GHFileNotFoundException) {
+            println(e.message)
         }
         val repository = gitHub.createRepository(TEST_REPOSITORY)
             .issues(true)
