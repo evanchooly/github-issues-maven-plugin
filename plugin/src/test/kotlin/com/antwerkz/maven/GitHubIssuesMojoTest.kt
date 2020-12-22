@@ -12,20 +12,24 @@ import org.kohsuke.github.GHRepository
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
 import java.io.File
+import java.lang.Thread.sleep
 
 class GitHubIssuesMojoTest {
     companion object {
         const val TEST_REPOSITORY = "issues-tester"
-        val CONFIG = "../testing-github.properties"
+        val CONFIG = if (File("../testing-github.properties").exists()) {
+            "../testing-github.properties"
+        } else {
+            "${System.getProperty("user.home")}/.github"
+        }
         val gitHub: GitHub = GitHubBuilder.fromPropertyFile(CONFIG).build()
     }
 
     @Test
     fun testGenerate() {
-        createRepo()
+        val repository = createRepo()
 
         generator().generate()
-        val repository = gitHub.getRepository("testingchooly/${TEST_REPOSITORY}")
 
         assertTrue(loadBody(repository).contains("test generated milestone"))
         val milestone = repository.findMilestone("1.0.0")
@@ -47,9 +51,8 @@ class GitHubIssuesMojoTest {
 
     @Test
     fun ignoreInvalidIssues() {
-        createRepo()
+        val repository = createRepo()
 
-        val repository = gitHub.getRepository("testingchooly/${TEST_REPOSITORY}")
         val milestone = repository.findMilestone("1.0.0")
         repository.getIssues(OPEN, milestone)
             .forEachIndexed { index, issue ->
@@ -75,10 +78,11 @@ class GitHubIssuesMojoTest {
     private fun generator() = IssuesGenerator("testingchooly/$TEST_REPOSITORY", "1.0.0-SNAPSHOT")
         .config(File(CONFIG))
 
-    private fun createRepo() {
+    private fun createRepo(): GHRepository {
         try {
             gitHub.getRepository("testingchooly/${TEST_REPOSITORY}")
                 .delete()
+            sleep(3000)
         } catch (_: GHFileNotFoundException) {
         }
         val repository = gitHub.createRepository(TEST_REPOSITORY)
@@ -99,6 +103,7 @@ class GitHubIssuesMojoTest {
             .label("documentation")
             .milestone(milestone)
             .create()
+        return repository
     }
 /*
     @Test
