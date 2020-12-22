@@ -10,7 +10,7 @@
     <groupId>com.antwerkz.github</groupId>
     <artifactId>issues-maven-plugin-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.1-SNAPSHOT</version>
+    <version>1.1.0-SNAPSHOT</version>
 
     <name>Github Issues Maven Plugin</name>
     <url>https://github.com/evanchooly/github-issues-maven-plugin</url>
@@ -40,6 +40,29 @@
         <junit.version>4.13.1</junit.version>
         <maven.version>3.6.0</maven.version>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <modules>
         <module>plugin</module>
