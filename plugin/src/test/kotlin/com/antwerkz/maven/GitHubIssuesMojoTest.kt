@@ -16,8 +16,9 @@ import java.io.File
 class GitHubIssuesMojoTest {
     companion object {
         const val TEST_REPOSITORY = "issues-tester"
+        val CONFIG = "../testing-github.properties"
         val gitHub: GitHub = GitHubBuilder
-            .fromPropertyFile("testing-github.properties").build()
+            .fromPropertyFile(CONFIG).build()
     }
 
     @Test
@@ -73,7 +74,7 @@ class GitHubIssuesMojoTest {
     }
 
     private fun generator() = IssuesGenerator("testingchooly/$TEST_REPOSITORY", "1.0.0-SNAPSHOT")
-        .config(File("testing-github.properties"))
+        .config(File(CONFIG))
 
     private fun createRepo() {
         try {
