@@ -51,7 +51,7 @@ class GitHubIssuesMojoTest {
 
         val milestone = repository.findMilestone("1.0.0")
         repository.getIssues(OPEN, milestone)
-            .forEachIndexed { index, issue ->
+            .forEach { issue ->
                 if (issue.number == 2) {
                     issue.addLabels("invalid")
                 }
