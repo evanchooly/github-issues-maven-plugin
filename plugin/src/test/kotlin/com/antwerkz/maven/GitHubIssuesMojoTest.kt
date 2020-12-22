@@ -17,8 +17,7 @@ class GitHubIssuesMojoTest {
     companion object {
         const val TEST_REPOSITORY = "issues-tester"
         val CONFIG = "../testing-github.properties"
-        val gitHub: GitHub = GitHubBuilder
-            .fromPropertyFile(CONFIG).build()
+        val gitHub: GitHub = GitHubBuilder.fromPropertyFile(CONFIG).build()
     }
 
     @Test
@@ -78,6 +77,7 @@ class GitHubIssuesMojoTest {
 
     private fun createRepo() {
         try {
+            println("gitHub.myself = ${gitHub.myself}")
             gitHub.getRepository("testingchooly/${TEST_REPOSITORY}")
                 .delete()
         } catch (_: GHFileNotFoundException) {
