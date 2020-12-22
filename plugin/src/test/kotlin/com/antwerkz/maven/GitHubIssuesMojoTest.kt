@@ -17,11 +17,7 @@ import java.lang.Thread.sleep
 class GitHubIssuesMojoTest {
     companion object {
         const val TEST_REPOSITORY = "issues-tester"
-        val CONFIG = if (File("../testing-github.properties").exists()) {
-            "../testing-github.properties"
-        } else {
-            "${System.getProperty("user.home")}/.github"
-        }
+        val CONFIG = "../testing-github.properties"
         val gitHub: GitHub = GitHubBuilder.fromPropertyFile(CONFIG).build()
     }
 

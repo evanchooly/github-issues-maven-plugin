@@ -24,7 +24,7 @@ jobs:
           restore-keys: \${{ runner.os }}-m2
       - name: Configure the job
         run: |
-          rm -vf ~/.github
-          curl -o ~/.github https://ghactions:${{ secrets.GH_PASSWD }}@evanchooly.com/private/files/testing-github.properties
+          rm -vf testing-github.properties
+          curl -o testing-github.properties https://ghactions:${{ secrets.GH_PASSWD }}@evanchooly.com/private/files/testing-github.properties
       - name: Build with Maven
         run: mvn -B verify --file pom.xml
