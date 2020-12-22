@@ -43,6 +43,6 @@
 
     <modules>
         <module>plugin</module>
-        <module>test</module>
+<!--        <module>test</module>-->
     </modules>
 </project>
