@@ -22,8 +22,6 @@ class GitHubIssuesMojoTest {
 
     @Test
     fun testGenerate() {
-        println(File(CONFIG).absolutePath)
-        println(File(CONFIG).exists())
         createRepo()
 
         generator().generate()
@@ -79,7 +77,6 @@ class GitHubIssuesMojoTest {
 
     private fun createRepo() {
         try {
-            println("gitHub.myself = ${gitHub.myself}")
             gitHub.getRepository("testingchooly/${TEST_REPOSITORY}")
                 .delete()
         } catch (_: GHFileNotFoundException) {
