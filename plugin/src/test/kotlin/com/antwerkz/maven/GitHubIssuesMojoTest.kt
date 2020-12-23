@@ -3,8 +3,10 @@ package com.antwerkz.maven
 import com.antwerkz.issues.IssuesGenerator
 import com.antwerkz.issues.findMilestone
 import com.antwerkz.issues.findReleaseByName
+import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import org.kohsuke.github.GHFileNotFoundException
 import org.kohsuke.github.GHIssueState.OPEN
@@ -12,13 +14,26 @@ import org.kohsuke.github.GHRepository
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
 import java.io.File
-import java.lang.Thread.sleep
 
 class GitHubIssuesMojoTest {
     companion object {
-        const val TEST_REPOSITORY = "issues-tester"
-        val CONFIG = "../testing-github.properties"
+        const val CONFIG = "../testing-github.properties"
         val gitHub: GitHub = GitHubBuilder.fromPropertyFile(CONFIG).build()
+    }
+
+    lateinit var repoName: String
+
+    @Before
+    fun name() {
+        repoName = "issues-tester${System.currentTimeMillis() % 10000}"
+    }
+
+    @After
+    fun cleanUpProject() {
+        try {
+            gitHub.getRepository("testingchooly/$repoName").delete()
+        } catch (e: GHFileNotFoundException) {
+        }
     }
 
     @Test
@@ -71,16 +86,11 @@ class GitHubIssuesMojoTest {
             ?: throw IllegalStateException("Should have a body")
     }
 
-    private fun generator() = IssuesGenerator("testingchooly/$TEST_REPOSITORY", "1.0.0-SNAPSHOT")
+    private fun generator() = IssuesGenerator("testingchooly/$repoName", "1.0.0-SNAPSHOT")
         .config(File(CONFIG))
 
     private fun createRepo(): GHRepository {
-        try {
-            gitHub.getRepository("testingchooly/${TEST_REPOSITORY}").delete()
-            sleep(3000)
-        } catch (e: GHFileNotFoundException) {
-        }
-        val repository = gitHub.createRepository(TEST_REPOSITORY)
+        val repository = gitHub.createRepository(repoName)
             .issues(true)
             .autoInit(true)
             .description("automatically generated test project")
