@@ -5,6 +5,7 @@ import com.antwerkz.issues.findMilestone
 import com.antwerkz.issues.findReleaseByName
 import org.junit.After
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -21,11 +22,13 @@ class GitHubIssuesMojoTest {
         val gitHub: GitHub = GitHubBuilder.fromPropertyFile(CONFIG).build()
     }
 
+    lateinit var repository: GHRepository
     lateinit var repoName: String
 
     @Before
     fun name() {
         repoName = "issues-tester${System.currentTimeMillis() % 10000}"
+        repository = createRepo()
     }
 
     @After
@@ -38,8 +41,6 @@ class GitHubIssuesMojoTest {
 
     @Test
     fun testGenerate() {
-        val repository = createRepo()
-
         generator().generate()
 
         assertTrue(loadBody(repository).contains("test generated milestone"))
@@ -62,8 +63,6 @@ class GitHubIssuesMojoTest {
 
     @Test
     fun ignoreInvalidIssues() {
-        val repository = createRepo()
-
         val milestone = repository.findMilestone("1.0.0")
         repository.getIssues(OPEN, milestone)
             .forEach { issue ->
@@ -81,13 +80,29 @@ class GitHubIssuesMojoTest {
         assertTrue(body.contains("[#3]"))
     }
 
-    private fun loadBody(repository: GHRepository?): String {
-        return repository.findReleaseByName("Version 1.0.0").body
-            ?: throw IllegalStateException("Should have a body")
+    @Test
+    fun badMilestone() {
+        assertThrows(IllegalArgumentException::class.java) {
+            generator("5.0.0-SNAPSHOT").generate()
+        }
     }
 
-    private fun generator() = IssuesGenerator("testingchooly/$repoName", "1.0.0-SNAPSHOT")
-        .config(File(CONFIG))
+    @Test
+    fun nondraftRelease() {
+        generator().generate()
+        val release = repository.findReleaseByName("Version 1.0.0")
+        release.update()
+            .draft(false)
+            .update()
+
+        val milestong = repository.findMilestone("1.0.0")
+
+        milestong.description = "I'm already closed so I should not show up in the release notes."
+        assertThrows(IllegalStateException::class.java) {
+            generator().generate()
+            assertFalse(repository.findReleaseByName("1.0.0").body.contains(milestong.description))
+        }
+    }
 
     private fun createRepo(): GHRepository {
         val repository = gitHub.createRepository(repoName)
@@ -110,12 +125,12 @@ class GitHubIssuesMojoTest {
             .create()
         return repository
     }
-/*
-    @Test
-    fun badMilestone() {
-        GitHubIssuesMojo
-                .build("MorphiaOrg/morphia", "12.0", "")
-                .execute()
+
+    private fun loadBody(repository: GHRepository?): String {
+        return repository.findReleaseByName("Version 1.0.0").body
+            ?: throw IllegalStateException("Should have a body")
     }
-*/
+
+    private fun generator(version: String = "1.0.0-SNAPSHOT") = IssuesGenerator("testingchooly/$repoName", version)
+        .config(File(CONFIG))
 }

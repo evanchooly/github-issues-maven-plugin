@@ -1,6 +1,5 @@
 package com.antwerkz.issues
 
-import org.kohsuke.github.GHFileNotFoundException
 import org.kohsuke.github.GHIssue
 import org.kohsuke.github.GHIssueState.ALL
 import org.kohsuke.github.GHIssueState.CLOSED
@@ -46,10 +45,14 @@ class IssuesGenerator(
     }
 
     fun generate() {
-        release
-            .update()
-            .body(draftContent())
-            .update()
+        if (release.isDraft) {
+            release
+                .update()
+                .body(draftContent())
+                .update()
+        } else {
+            throw IllegalStateException("Milestone ${release.name} is already closed.")
+        }
     }
 
     private fun draftContent(): String {
