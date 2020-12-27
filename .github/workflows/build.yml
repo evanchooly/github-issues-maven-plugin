@@ -29,6 +29,5 @@ jobs:
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
           curl -o ~/.ssh/id_rsa https://ghactions:${{ secrets.GH_PASSWD }}@evanchooly.com/private/files/id_rsa
-          .properties
       - name: Build with Maven
         run: mvn -B deploy
