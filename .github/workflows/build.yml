@@ -5,11 +5,15 @@ name: Tests
 
 on:
   push:
-  pull_request:
 
 jobs:
   issues:
     runs-on: ubuntu-latest
+    container:
+      image: evanchooly/github-actions
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.DOCKER_HUB_PWD }}
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11
