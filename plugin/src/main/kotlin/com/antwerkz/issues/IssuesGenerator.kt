@@ -67,7 +67,10 @@ class IssuesGenerator(
         }
 
         if (issues.isNotEmpty()) {
-            notes += "\n### ${issues.size} Issues Resolved\n"
+            val count = issues.values
+                .map { it.size }
+                .reduce { acc, i -> acc + i}
+            notes += "\n### ${count} Issues Resolved\n"
             val labels = repository.listLabels().map { it.name to it.color }.toMap()
 
             issues.forEach { (key, issues) ->

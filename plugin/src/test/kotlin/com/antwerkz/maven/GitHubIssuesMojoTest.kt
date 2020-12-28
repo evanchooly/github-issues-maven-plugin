@@ -36,7 +36,7 @@ class GitHubIssuesMojoTest {
     fun cleanUpProject() {
         try {
             gitHub.getRepository("testingchooly/$repoName").delete()
-        } catch (e: GHFileNotFoundException) {
+        } catch (_: GHFileNotFoundException) {
         }
     }
 
@@ -75,10 +75,11 @@ class GitHubIssuesMojoTest {
         generator().generate()
         val body = loadBody(repository)
         assertTrue("Should contain issues heading:\n$body", body.contains("Issues Resolved"))
-        assertTrue(body.contains("2 Issues Resolved"))
+        assertTrue(body.contains("3 Issues Resolved"))
         assertTrue(body.contains("[#1]"))
         assertFalse(body.contains("[#2]"))
         assertTrue(body.contains("[#3]"))
+        assertTrue(body.contains("[#4]"))
     }
 
     @Test
@@ -89,19 +90,19 @@ class GitHubIssuesMojoTest {
     }
 
     @Test
-    fun nondraftRelease() {
+    fun nonDraftRelease() {
         generator().generate()
         val release = repository.findReleaseByName("Version 1.0.0")
         release.update()
             .draft(false)
             .update()
 
-        val milestong = repository.findMilestone("1.0.0")
+        val milestone = repository.findMilestone("1.0.0")
 
-        milestong.description = "I'm already closed so I should not show up in the release notes."
+        milestone.description = "I'm already closed so I should not show up in the release notes."
         assertThrows(IllegalStateException::class.java) {
             generator().generate()
-            assertFalse(repository.findReleaseByName("1.0.0").body.contains(milestong.description))
+            assertFalse(repository.findReleaseByName("1.0.0").body.contains(milestone.description))
         }
     }
 
@@ -122,6 +123,10 @@ class GitHubIssuesMojoTest {
             .create()
         repository.createIssue("Third Issue")
             .label("documentation")
+            .milestone(milestone)
+            .create()
+        repository.createIssue("Fourth Issue")
+            .label("bug")
             .milestone(milestone)
             .create()
         return repository
