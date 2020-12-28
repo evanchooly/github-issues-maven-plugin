@@ -71,7 +71,7 @@ class IssuesGenerator(
             val labels = repository.listLabels().map { it.name to it.color }.toMap()
 
             issues.forEach { (key, issues) ->
-                notes += "#### ![](https://placehold.it/15/${labels[key]}/000000?text=+) ${key.toUpperCase()}\n"
+                notes += "#### ![](http://placehold.it/15/${labels[key]}/000000?text=+) ${key.toUpperCase()}\n"
                 issues.forEach { issue ->
                     notes += "* [#${issue.number}](${issue.htmlUrl}): ${issue.title}\n"
                 }
