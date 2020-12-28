@@ -59,10 +59,10 @@ class IssuesGenerator(
         if (docsUrl != null || javadocUrl != null) {
             notes += "\n### Documentation\n"
             if (docsUrl != null) {
-                notes += "Full documentation can be found at ${docsUrl}."
+                notes += "Full documentation can be found at ${docsUrl}. "
             }
             if (javadocUrl != null) {
-                notes += "Javadoc can be found at ${javadocUrl}."
+                notes += "Javadoc can be found at ${javadocUrl}. "
             }
         }
 
