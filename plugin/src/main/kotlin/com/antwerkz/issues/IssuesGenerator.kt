@@ -8,23 +8,22 @@ import org.kohsuke.github.GHRelease
 import org.kohsuke.github.GHRepository
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
-import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class IssuesGenerator(
     repositoryName: String,
     version: String,
-    var docsUrl: String? = null,
-    var javadocUrl: String? = null
+    val credentials: String,
+    val docsUrl: String? = null,
+    val javadocUrl: String? = null
 ) {
     companion object {
         val excludedLabels = listOf("wontfix", "invalid")
     }
 
-    private var credentials: String? = null
     val github: GitHub by lazy {
-        credentials?.let { GitHubBuilder.fromPropertyFile(credentials).build() } ?: GitHub.connect()
+        credentials.let { GitHubBuilder.fromPropertyFile(credentials).build() } ?: GitHub.connect()
     }
     val version: String = version.replace("-SNAPSHOT", "")
     val repository: GHRepository by lazy {
@@ -34,15 +33,6 @@ class IssuesGenerator(
     val release: GHRelease by lazy { findRelease() }
     val issues: Map<String, List<GHIssue>> by lazy { groupIssues() }
     val pullRequests: List<GHIssue> by lazy { listPRs() }
-
-    init {
-        val credentials = System.getenv("GH_CREDS") ?: System.getProperty("GH_CREDS")
-        this.credentials = when {
-            credentials != null -> credentials
-            File("github.properties").exists() -> "github.properties"
-            else -> null
-        }
-    }
 
     fun generate() {
         if (release.isDraft) {
@@ -131,11 +121,6 @@ class IssuesGenerator(
                 .draft(true)
                 .create()
         }
-    }
-
-    fun config(file: File): IssuesGenerator {
-        credentials = file.absolutePath
-        return this
     }
 }
 

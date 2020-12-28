@@ -9,11 +9,6 @@ on:
 jobs:
   issues:
     runs-on: ubuntu-latest
-#    container:
-#      image: evanchooly/github-actions
-#      credentials:
-#        username: ${{ github.actor }}
-#        password: ${{ secrets.DOCKER_HUB_PWD }}
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11
@@ -26,11 +21,6 @@ jobs:
           path: ~/.m2
           key: \${{ runner.os }}-m2-\${{ hashFiles('**/pom.xml') }}
           restore-keys: \${{ runner.os }}-m2
-#      - name: Configure the job
-#        run: |
-#          cp -f /mnt/files/testing-github.properties .
-#          mkdir -p ~/.m2
-#          cp -f /mnt/files/settings.xml ~/.m2/settings.xml
       - name: Configure the job
         run: |
           rm -vf testing-github.properties

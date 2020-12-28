@@ -1,5 +1,6 @@
 package com.antwerkz.maven
 
+import com.antwerkz.issues.IssuesGenerator
 import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugins.annotations.LifecyclePhase
 import org.apache.maven.plugins.annotations.Mojo
@@ -18,19 +19,20 @@ import java.util.Date
 
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.DEPLOY)
 class GitHubIssuesMojo : AbstractMojo() {
-
-    @Parameter
-    lateinit var project: MavenProject
-
     @Parameter(name = "repository", property = "github.repository", required = true)
     lateinit var repository: String
 
-
     @Parameter(name = "version", property = "github.release.version", defaultValue = "\${project.version}")
-    var version: String? = null
+    lateinit var version: String
 
-    @Parameter(property = "javadocUrl", required = true)
-    lateinit var javadocUrl: String
+    @Parameter(name = "config", property = "github.config", defaultValue = "github.properties")
+    lateinit var config: String
+
+    @Parameter(property = "javadocUrl")
+    var javadocUrl: String? = null
+
+    @Parameter(property = "docsUrl")
+    var docsUrl: String? = null
 
     @Parameter
     var outputDir: String? = null
@@ -39,8 +41,7 @@ class GitHubIssuesMojo : AbstractMojo() {
     var generateRelease = false
 
     override fun execute() {
-
+        IssuesGenerator(repository, version, config, docsUrl, javadocUrl)
+            .generate()
     }
-
-
 }

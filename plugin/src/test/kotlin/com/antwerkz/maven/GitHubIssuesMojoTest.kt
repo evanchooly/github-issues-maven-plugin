@@ -14,7 +14,6 @@ import org.kohsuke.github.GHIssueState.OPEN
 import org.kohsuke.github.GHRepository
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
-import java.io.File
 
 class GitHubIssuesMojoTest {
     companion object {
@@ -24,10 +23,12 @@ class GitHubIssuesMojoTest {
 
     lateinit var repository: GHRepository
     lateinit var repoName: String
+    var counter = 0
 
     @Before
     fun name() {
-        repoName = "issues-tester${System.currentTimeMillis() % 10000}"
+        repoName = "issues-tester-${counter++}"
+        cleanUpProject()
         repository = createRepo()
     }
 
@@ -131,6 +132,6 @@ class GitHubIssuesMojoTest {
             ?: throw IllegalStateException("Should have a body")
     }
 
-    private fun generator(version: String = "1.0.0-SNAPSHOT") = IssuesGenerator("testingchooly/$repoName", version)
-        .config(File(CONFIG))
+    private fun generator(version: String = "1.0.0-SNAPSHOT") =
+        IssuesGenerator("testingchooly/$repoName", version, CONFIG)
 }
