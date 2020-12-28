@@ -29,8 +29,8 @@ jobs:
       - name: Configure the job
         run: |
           rm -vf testing-github.properties
-          curl -o testing-github.properties https://ghactions:${{ secrets.GH_PASSWD }}@evanchooly.com/private/files/testing-github.properties
+          cp /mnt/files/testing-github.properties .
           mkdir -p ~/.m2
-          curl -o ~/.m2/settings.xml https://ghactions:${{ secrets.GH_PASSWD }}@evanchooly.com/private/files/settings.xml
+          curl -o /mnt/files/settings.xml ~/.m2/
       - name: Build with Maven
         run: mvn -B deploy
