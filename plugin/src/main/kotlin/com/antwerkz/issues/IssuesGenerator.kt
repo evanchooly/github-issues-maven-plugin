@@ -8,15 +8,18 @@ import org.kohsuke.github.GHRelease
 import org.kohsuke.github.GHRepository
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
+import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.stream.Stream
 
 class IssuesGenerator(
     repositoryName: String,
     version: String,
     val credentials: String,
     val docsUrl: String? = null,
-    val javadocUrl: String? = null
+    val javadocUrl: String? = null,
+    val assets: List<File> = listOf()
 ) {
     companion object {
         val excludedLabels = listOf("wontfix", "invalid")
@@ -25,7 +28,8 @@ class IssuesGenerator(
     val github: GitHub by lazy {
         credentials.let { GitHubBuilder.fromPropertyFile(credentials).build() } ?: GitHub.connect()
     }
-    val version: String = version.replace("-SNAPSHOT", "")
+    val snapshot = version.contains("-SNAPSHOT")
+    val version = version.replace("-SNAPSHOT", "")
     val repository: GHRepository by lazy {
         github.getRepository(repositoryName)
     }
@@ -35,11 +39,20 @@ class IssuesGenerator(
     val pullRequests: List<GHIssue> by lazy { listPRs() }
 
     fun generate() {
-        if (release.isDraft) {
+        if (release.isDraft || release.isPrerelease) {
             release
                 .update()
+                .draft(!snapshot)
+                .prerelease(snapshot)
                 .body(draftContent())
                 .update()
+
+            release.listAssets().forEach { it.delete() }
+
+            assets.forEach {
+                release.uploadAsset(it, "application/java-archive")
+            }
+
         } else {
             throw IllegalStateException("Milestone ${release.name} is already closed.")
         }
