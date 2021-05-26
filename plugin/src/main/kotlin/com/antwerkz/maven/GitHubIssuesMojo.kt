@@ -28,8 +28,9 @@ class GitHubIssuesMojo : AbstractMojo() {
     var docsUrl: String? = null
 
     override fun execute() {
-        val assets = project.attachedArtifacts
-            .map { it.file } + project.artifact.file
+        var assets = project.attachedArtifacts
+            .map { it.file }
+        project.artifact?.file?.let { assets += it }
         IssuesGenerator(repository, version, config, docsUrl, javadocUrl, assets)
             .generate()
     }

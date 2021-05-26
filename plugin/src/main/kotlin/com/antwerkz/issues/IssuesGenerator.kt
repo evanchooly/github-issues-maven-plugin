@@ -11,7 +11,6 @@ import org.kohsuke.github.GitHubBuilder
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.stream.Stream
 
 class IssuesGenerator(
     repositoryName: String,
@@ -28,8 +27,7 @@ class IssuesGenerator(
     val github: GitHub by lazy {
         credentials.let { GitHubBuilder.fromPropertyFile(credentials).build() } ?: GitHub.connect()
     }
-    val snapshot = version.contains("-SNAPSHOT")
-    val version = version.replace("-SNAPSHOT", "")
+    val version: String = version.replace("-SNAPSHOT", "")
     val repository: GHRepository by lazy {
         github.getRepository(repositoryName)
     }
@@ -38,12 +36,11 @@ class IssuesGenerator(
     val issues: Map<String, List<GHIssue>> by lazy { groupIssues() }
     val pullRequests: List<GHIssue> by lazy { listPRs() }
 
-    fun generate() {
-        if (release.isDraft || release.isPrerelease) {
-            release
+    fun generate(): GHRelease {
+        var generated = release
+        if (release.isDraft) {
+            generated = release
                 .update()
-                .draft(!snapshot)
-                .prerelease(snapshot)
                 .body(draftContent())
                 .update()
 
@@ -52,10 +49,11 @@ class IssuesGenerator(
             assets.forEach {
                 release.uploadAsset(it, "application/java-archive")
             }
-
         } else {
             throw IllegalStateException("Milestone ${release.name} is already closed.")
         }
+
+        return generated
     }
 
     private fun draftContent(): String {
@@ -83,11 +81,11 @@ class IssuesGenerator(
             val count = issues.values
                 .map { it.size }
                 .reduce { acc, i -> acc + i}
-            notes += "\n### ${count} Issues Resolved\n"
+            notes += "\n### $count Issues Resolved\n"
             val labels = repository.listLabels().map { it.name to it.color }.toMap()
 
             issues.forEach { (key, issues) ->
-                notes += "#### ![](http://placehold.it/15/${labels[key]}/000000?text=+) ${key.toUpperCase()}\n"
+                notes += "#### ![](https://placehold.it/15/${labels[key]}/000000?text=+) ${key.toUpperCase()}\n"
                 issues.forEach { issue ->
                     notes += "* [#${issue.number}](${issue.htmlUrl}): ${issue.title}\n"
                 }
@@ -140,10 +138,13 @@ class IssuesGenerator(
     }
 }
 
-fun GHRepository?.findReleaseByName(name: String): GHRelease {
-    return this?.listReleases()?.find { it.name == name } ?: throw IllegalArgumentException("No release found named $name")
+fun GHRepository.findReleaseByName(name: String): GHRelease {
+    return listReleases()?.find { it.name == name } ?: createRelease(name)
+        .name(name)
+        .draft(true)
+        .create()
 }
 
 fun GHRepository.findMilestone(title: String): GHMilestone {
-    return listMilestones(ALL)?.find { it.title == title } ?: throw IllegalArgumentException("No milestone found named $title")
+    return listMilestones(ALL)?.find { it.title == title } ?: createMilestone(title, "")
 }

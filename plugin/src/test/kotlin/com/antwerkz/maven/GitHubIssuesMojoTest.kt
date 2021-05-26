@@ -14,6 +14,8 @@ import org.kohsuke.github.GHIssueState.OPEN
 import org.kohsuke.github.GHRepository
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
+import java.io.FileNotFoundException
+import java.lang.Thread.sleep
 
 class GitHubIssuesMojoTest {
     companion object {
@@ -23,13 +25,12 @@ class GitHubIssuesMojoTest {
 
     lateinit var repository: GHRepository
     lateinit var repoName: String
-    var counter = 0
 
     @Before
     fun name() {
-        repoName = "issues-tester-${counter++}"
+        repoName = "issues-tester-${System.currentTimeMillis() % 10000}"
         cleanUpProject()
-        repository = createRepo()
+        createRepo()
     }
 
     @After
@@ -42,24 +43,25 @@ class GitHubIssuesMojoTest {
 
     @Test
     fun testGenerate() {
-        generator().generate()
+        var release = generator().generate()
 
-        assertTrue(loadBody(repository).contains("test generated milestone"))
+        assertTrue(release.body.contains("test generated milestone"))
         val milestone = repository.findMilestone("1.0.0")
         milestone.description = "updated description"
-        generator().generate()
-        var body: String = loadBody(repository)
-        assertFalse("Should not contain old milestone description", body.contains("automatically generated test project"))
-        assertTrue("Should contain new milestone description", body.contains("updated description"))
-        assertFalse("Should not contain issues heading:\n$body", body.contains("Issues Resolved"))
-        assertFalse("Should not contain pr heading:\n$body", body.contains("Pull Requests Merged"))
+        release = generator().generate()
+        assertFalse(
+            "Should not contain old milestone description",
+            release.body.contains("automatically generated test project")
+        )
+        assertTrue("Should contain new milestone description", release.body.contains("updated description"))
+        assertFalse("Should not contain issues heading:\n${release.body}", release.body.contains("Issues Resolved"))
+        assertFalse("Should not contain pr heading:\n${release.body}", release.body.contains("Pull Requests Merged"))
 
         repository.getIssues(OPEN, milestone)
             .forEach { it.close() }
-        generator().generate()
-        body = loadBody(repository)
-        assertTrue("Should contain issues heading:\n$body", body.contains("Issues Resolved"))
-        assertFalse("Should not contain pr heading:\n$body", body.contains("Pull Requests Merged"))
+        release = generator().generate()
+        assertTrue("Should contain issues heading:\n${release.body}", release.body.contains("Issues Resolved"))
+        assertFalse("Should not contain pr heading:\n${release.body}", release.body.contains("Pull Requests Merged"))
     }
 
     @Test
@@ -72,31 +74,27 @@ class GitHubIssuesMojoTest {
                 }
                 issue.close()
             }
-        generator().generate()
-        val body = loadBody(repository)
-        assertTrue("Should contain issues heading:\n$body", body.contains("Issues Resolved"))
-        assertTrue(body.contains("3 Issues Resolved"))
-        assertTrue(body.contains("[#1]"))
-        assertFalse(body.contains("[#2]"))
-        assertTrue(body.contains("[#3]"))
-        assertTrue(body.contains("[#4]"))
+        val release = generator().generate()
+        assertTrue("Should contain issues heading:\n${release.body}", release.body.contains("Issues Resolved"))
+        assertTrue(release.body.contains("3 Issues Resolved"))
+        assertTrue(release.body.contains("[#1]"))
+        assertFalse(release.body.contains("[#2]"))
+        assertTrue(release.body.contains("[#3]"))
+        assertTrue(release.body.contains("[#4]"))
     }
 
     @Test
     fun badMilestone() {
-        assertThrows(IllegalArgumentException::class.java) {
-            generator("5.0.0-SNAPSHOT").generate()
-        }
+        val generate = generator("5.0.0-SNAPSHOT").generate()
+        assertTrue(generate.isDraft)
     }
 
     @Test
     fun nonDraftRelease() {
-        generator().generate()
-        val release = repository.findReleaseByName("Version 1.0.0")
+        val release = generator().generate()
         release.update()
             .draft(false)
             .update()
-
         val milestone = repository.findMilestone("1.0.0")
 
         milestone.description = "I'm already closed so I should not show up in the release notes."
@@ -106,35 +104,59 @@ class GitHubIssuesMojoTest {
         }
     }
 
-    private fun createRepo(): GHRepository {
-        val repository = gitHub.createRepository(repoName)
-            .issues(true)
-            .autoInit(true)
-            .description("automatically generated test project")
-            .create()
-        val milestone = repository.createMilestone("1.0.0", "test generated milestone")
-        repository.createIssue("First Issue")
-            .label("bug")
-            .milestone(milestone)
-            .create()
-        repository.createIssue("Second Issue")
-            .label("enhancement")
-            .milestone(milestone)
-            .create()
-        repository.createIssue("Third Issue")
-            .label("documentation")
-            .milestone(milestone)
-            .create()
-        repository.createIssue("Fourth Issue")
-            .label("bug")
-            .milestone(milestone)
-            .create()
-        return repository
+    private fun createRepo() {
+        try {
+            repository = gitHub.createRepository(repoName)
+                .issues(true)
+                .autoInit(true)
+                .description("automatically generated test project")
+                .create()
+            val milestone = retry {
+                repository.createMilestone("1.0.0", "test generated milestone")
+            }
+            repository.createIssue("First Issue")
+                .label("bug")
+                .milestone(milestone)
+                .create()
+            repository.createIssue("Second Issue")
+                .label("enhancement")
+                .milestone(milestone)
+                .create()
+            repository.createIssue("Third Issue")
+                .label("documentation")
+                .milestone(milestone)
+                .create()
+            repository.createIssue("Fourth Issue")
+                .label("bug")
+                .milestone(milestone)
+                .create()
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+            throw e
+        }
+        blah {
+            4
+        }
     }
 
-    private fun loadBody(repository: GHRepository?): String {
-        return repository.findReleaseByName("Version 1.0.0").body
-            ?: throw IllegalStateException("Should have a body")
+    private fun blah(param: () -> Int) {
+        param()
+    }
+
+    fun <R> retry(count: Int = 5, body: () -> R): R {
+        repeat(count) {
+            try {
+                return body()
+            } catch(t: Throwable) {
+                if(it == count) {
+                    throw t
+                }
+                val delay: Long = 200L * it
+                println("Attempt #$it failed.  Will retry in $delay ms.")
+                sleep(delay)
+            }
+        }
+        throw IllegalStateException("Repeated $count times with neither a return nor an exception")
     }
 
     private fun generator(version: String = "1.0.0-SNAPSHOT") =
