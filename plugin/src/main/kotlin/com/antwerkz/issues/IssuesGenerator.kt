@@ -125,17 +125,7 @@ class IssuesGenerator(
             }
     }
 
-    private fun findRelease(): GHRelease {
-        val name = "Version $version"
-        return try {
-            repository.findReleaseByName(name)
-        } catch (_: IllegalArgumentException) {
-            repository.createRelease(name)
-                .name(name)
-                .draft(true)
-                .create()
-        }
-    }
+    private fun findRelease(): GHRelease = repository.findReleaseByName("Version $version")
 }
 
 fun GHRepository.findReleaseByName(name: String): GHRelease {

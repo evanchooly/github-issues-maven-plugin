@@ -5,6 +5,7 @@ import com.antwerkz.issues.findMilestone
 import com.antwerkz.issues.findReleaseByName
 import org.junit.After
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -35,10 +36,9 @@ class GitHubIssuesMojoTest {
 
     @After
     fun cleanUpProject() {
-        try {
-            gitHub.getRepository("testingchooly/$repoName").delete()
-        } catch (_: GHFileNotFoundException) {
-        }
+        gitHub.myself.listRepositories()
+            .filter { it.name.startsWith("issues-tester-") }
+            .forEach { it.delete() }
     }
 
     @Test
@@ -85,8 +85,9 @@ class GitHubIssuesMojoTest {
 
     @Test
     fun badMilestone() {
-        val generate = generator("5.0.0-SNAPSHOT").generate()
-        assertTrue(generate.isDraft)
+        val release = generator("5.0.0-SNAPSHOT").generate()
+        assertTrue(release.isDraft)
+        assertNotNull(release.body)
     }
 
     @Test
