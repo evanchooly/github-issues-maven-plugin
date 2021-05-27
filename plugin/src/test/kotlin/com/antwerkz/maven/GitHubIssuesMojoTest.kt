@@ -38,7 +38,12 @@ class GitHubIssuesMojoTest {
     fun cleanUpProject() {
         gitHub.myself.listRepositories()
             .filter { it.name.startsWith("issues-tester-") }
-            .forEach { it.delete() }
+            .forEach {
+                try {
+                    it.delete()
+                } catch (_: Exception) {
+                }
+            }
     }
 
     @Test
