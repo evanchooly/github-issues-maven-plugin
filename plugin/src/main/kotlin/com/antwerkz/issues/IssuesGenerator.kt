@@ -11,6 +11,7 @@ import org.kohsuke.github.GitHubBuilder
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 class IssuesGenerator(
     repositoryName: String,
@@ -37,23 +38,26 @@ class IssuesGenerator(
     val pullRequests: List<GHIssue> by lazy { listPRs() }
 
     fun generate(): GHRelease {
-        var generated = release
         if (release.isDraft) {
-            generated = release
+            val generated = release
                 .update()
                 .body(draftContent())
                 .update()
 
-            release.listAssets().forEach { it.delete() }
+            release.listAssets().forEach {
+                println("Removing ${it.name}")
+                it.delete()
+            }
 
             assets.forEach {
+                println("Uploading $it")
                 release.uploadAsset(it, "application/java-archive")
             }
+            return generated
         } else {
             throw IllegalStateException("Milestone ${release.name} is already closed.")
         }
 
-        return generated
     }
 
     private fun draftContent(): String {
@@ -82,10 +86,10 @@ class IssuesGenerator(
                 .map { it.size }
                 .reduce { acc, i -> acc + i}
             notes += "\n### $count Issues Resolved\n"
-            val labels = repository.listLabels().map { it.name to it.color }.toMap()
+            val labels = repository.listLabels().associate { it.name to it.color }
 
             issues.forEach { (key, issues) ->
-                notes += "#### ![](https://placehold.it/15/${labels[key]}/000000?text=+) ${key.toUpperCase()}\n"
+                notes += "#### ![](https://placehold.it/15/${labels[key]}/000000?text=+) ${key.uppercase(Locale.getDefault())}\n"
                 issues.forEach { issue ->
                     notes += "* [#${issue.number}](${issue.htmlUrl}): ${issue.title}\n"
                 }
