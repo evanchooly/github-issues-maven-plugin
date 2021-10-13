@@ -49,7 +49,7 @@ class IssuesGenerator(
                 it.delete()
             }
 
-            assets.forEach {
+            assets.distinct().forEach {
                 println("Uploading $it")
                 release.uploadAsset(it, "application/java-archive")
             }
