@@ -20,8 +20,7 @@ import java.lang.Thread.sleep
 
 class GitHubIssuesMojoTest {
     companion object {
-        const val CONFIG = "../testing-github.properties"
-        val gitHub: GitHub = GitHubBuilder.fromPropertyFile(CONFIG).build()
+        val gitHub: GitHub = GitHubBuilder.fromEnvironment().build()
     }
 
     lateinit var repository: GHRepository
@@ -166,5 +165,5 @@ class GitHubIssuesMojoTest {
     }
 
     private fun generator(version: String = "1.0.0-SNAPSHOT") =
-        IssuesGenerator("testingchooly/$repoName", version, CONFIG)
+        IssuesGenerator("testingchooly/$repoName", version)
 }

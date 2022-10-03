@@ -18,9 +18,6 @@ class GitHubIssuesMojo : AbstractMojo() {
     @Parameter(name = "version", property = "github.release.version", defaultValue = "\${project.version}")
     lateinit var version: String
 
-    @Parameter(name = "config", property = "github.config", defaultValue = "github.properties")
-    lateinit var config: String
-
     @Parameter(property = "javadocUrl")
     var javadocUrl: String? = null
 
@@ -31,7 +28,7 @@ class GitHubIssuesMojo : AbstractMojo() {
         var assets = project.attachedArtifacts
             .map { it.file }
         project.artifact?.file?.let { assets += it }
-        IssuesGenerator(repository, version, config, docsUrl, javadocUrl, assets)
+        IssuesGenerator(repository, version, docsUrl, javadocUrl, assets)
             .generate()
     }
 }

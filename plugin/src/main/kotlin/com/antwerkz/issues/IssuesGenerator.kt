@@ -16,7 +16,6 @@ import java.util.Locale
 class IssuesGenerator(
     repositoryName: String,
     version: String,
-    val credentials: String,
     val docsUrl: String? = null,
     val javadocUrl: String? = null,
     val assets: List<File> = listOf()
@@ -25,9 +24,7 @@ class IssuesGenerator(
         val excludedLabels = listOf("wontfix", "invalid")
     }
 
-    val github: GitHub by lazy {
-        credentials.let { GitHubBuilder.fromPropertyFile(credentials).build() } ?: GitHub.connect()
-    }
+    val github: GitHub = GitHubBuilder.fromEnvironment().build()
     val version: String = version.replace("-SNAPSHOT", "")
     val repository: GHRepository by lazy {
         github.getRepository(repositoryName)
