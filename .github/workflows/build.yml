@@ -1,19 +1,17 @@
-name: Build Project
+name: Build
 
 on:
   push:
-    paths-ignore:
-      - '.github/**'
   workflow_dispatch:
 
 jobs:
-  issues:
+  Build:
     uses: evanchooly/workflows/.github/workflows/build.yml@master
     secrets:
       GH_OAUTH: ${{ secrets.TESTING_GH_OAUTH }}
-  release:
+  Snapshots:
     needs:
-      - issues
+      - Build
     uses: evanchooly/workflows/.github/workflows/release.yml@master
     secrets:
       SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
