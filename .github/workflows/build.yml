@@ -5,3 +5,5 @@ on: [ push, workflow_dispatch ]
 jobs:
   issues:
     uses: evanchooly/workflows/.github/workflows/build.yml@master
+    secrets:
+      GH_OAUTH: ${{ secrets.GH_OAUTH }}
