@@ -8,6 +8,8 @@ on:
 jobs:
   Build:
     uses: evanchooly/workflows/.github/workflows/build.yml@master
+    secrets:
+      GH_OAUTH: ${{ secrets.TESTING_GH_OAUTH }}
   dependabot:
     needs:
       - Build
