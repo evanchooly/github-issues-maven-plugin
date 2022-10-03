@@ -11,3 +11,14 @@ jobs:
     uses: evanchooly/workflows/.github/workflows/build.yml@master
     secrets:
       GH_OAUTH: ${{ secrets.TESTING_GH_OAUTH }}
+  release:
+    needs:
+      - issues
+    uses: evanchooly/workflows/.github/workflows/release.yml@master
+    secrets:
+      SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+      SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+      GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_OAUTH: ${{ secrets.GH_OAUTH }}
