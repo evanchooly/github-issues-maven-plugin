@@ -1,4 +1,4 @@
-name: Dependabot PRs
+name: Pull Requests
 
 on:
   pull_request:
@@ -6,11 +6,7 @@ on:
       - '.github/**'
 
 jobs:
-  Build:
-    uses: evanchooly/workflows/.github/workflows/build.yml@master
+  pull-request:
+    uses: evanchooly/workflows/.github/workflows/pull-request.yml@master
     secrets:
       GH_OAUTH: ${{ secrets.TESTING_GH_OAUTH }}
-  dependabot:
-    needs:
-      - Build
-    uses: evanchooly/workflows/.github/workflows/pull-request.yml@master
