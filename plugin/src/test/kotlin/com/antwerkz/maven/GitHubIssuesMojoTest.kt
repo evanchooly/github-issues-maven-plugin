@@ -20,6 +20,9 @@ import java.lang.Thread.sleep
 
 class GitHubIssuesMojoTest {
     companion object {
+        val oauth = System.getenv().get("GITHUB_OAUTH") ?:
+            throw IllegalStateException("no oauth env var")
+
         val gitHub: GitHub = GitHubBuilder.fromEnvironment().build()
     }
 

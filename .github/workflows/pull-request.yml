@@ -6,7 +6,7 @@ on:
       - '.github/**'
 
 jobs:
-  pull-request:
+  Build:
     uses: evanchooly/workflows/.github/workflows/pull-request.yml@master
     secrets:
       GH_OAUTH: ${{ secrets.TESTING_GH_OAUTH }}
