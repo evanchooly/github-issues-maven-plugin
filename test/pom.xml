@@ -5,12 +5,12 @@
     <parent>
         <groupId>com.antwerkz.github</groupId>
         <artifactId>issues-maven-plugin-parent</artifactId>
-        <version>1.1.9-SNAPSHOT</version>
+        <version>1.1.9</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>test</artifactId>
-    <version>1.1.9-SNAPSHOT</version>
+    <version>1.1.9</version>
     <packaging>jar</packaging>
 
     <build>
