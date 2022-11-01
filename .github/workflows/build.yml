@@ -10,7 +10,7 @@ jobs:
   Build:
     uses: evanchooly/workflows/.github/workflows/build.yml@master
     secrets:
-      GH_OAUTH: ${{ secrets.TESTING_GH_OAUTH }}
+      GH_OAUTH: ${{ secrets.GH_OAUTH }}
   Snapshots:
     needs:
       - Build
