@@ -7,8 +7,6 @@ on:
 jobs:
   Build:
     uses: evanchooly/workflows/.github/workflows/build.yml@master
-    secrets:
-      GH_TOKEN: ${{ secrets.GH_OAUTH }}
   Snapshots:
     if: github.ref_type == 'branch'
     needs:
