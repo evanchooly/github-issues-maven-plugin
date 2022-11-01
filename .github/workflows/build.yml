@@ -2,8 +2,6 @@ name: Build
 
 on:
   push:
-    tags-ignore:
-      - r[0-9]*
   workflow_dispatch:
 
 jobs:
@@ -12,6 +10,7 @@ jobs:
     secrets:
       GH_OAUTH: ${{ secrets.GH_OAUTH }}
   Snapshots:
+    if: github.ref_type == 'branch'
     needs:
       - Build
     uses: evanchooly/workflows/.github/workflows/release.yml@master
