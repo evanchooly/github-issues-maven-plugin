@@ -9,4 +9,4 @@ jobs:
   Build:
     uses: evanchooly/workflows/.github/workflows/pull-request.yml@master
     secrets:
-      GH_OAUTH: ${{ secrets.GH_OAUTH }}
+      GH_TOKEN: ${{ secrets.GH_OAUTH }}
