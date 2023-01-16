@@ -27,7 +27,7 @@
         <kotlin.version>1.7.20</kotlin.version>
         <junit.version>4.13.2</junit.version>
         <maven.version>3.8.6</maven.version>
-        <maven.plugin.version>3.6.4</maven.plugin.version>
+        <maven.plugin.version>3.7.1</maven.plugin.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <downloadSources>true</downloadSources>
